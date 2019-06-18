@@ -14,8 +14,9 @@ using System.Data.Odbc;
 
 namespace DotNetSqlFactory.DataOperations
 {
-    public class SqlFactory
+    public class SqlFactory<T> where T : class, new()
     {
+        private T _value;
         DbConnection _dbConnection;
         public DbConnection DatabaseConnection
         {
@@ -113,24 +114,30 @@ namespace DotNetSqlFactory.DataOperations
             _dbConnection.ConnectionString = _connectionString; 
             _dbConnection.Open();
         }
-
-        public void ExecuteQuery(string sqlQuery)
+        /// <summary>
+        /// Returns a List<typeparamref name="T"/> frome the SELECT Query response.
+        /// </summary>
+        /// <param name="sqlQuery"></param>
+        /// <returns></returns>
+        public List<T> QueryToList(string sqlQuery)
         {
+            List<T> theList = new List<T>();
             OpenConnection();
 
-            using(DbCommand command = _dbFactory.CreateCommand())
+            using (DbCommand command = _dbFactory.CreateCommand())
             {
                 command.Connection = _dbConnection;
                 command.CommandText = sqlQuery;
-                using(DbDataReader dataReader = command.ExecuteReader(CommandBehavior.CloseConnection))
+                using (DbDataReader dataReader = command.ExecuteReader(CommandBehavior.CloseConnection))
                 {
                     while (dataReader.Read())
                     {
-                        var test = dataReader["Make"];
+                        DTOMapper<T> dtoMapper = new DTOMapper<T>();
+                        theList = dtoMapper.IDataReaderToDtoList(dataReader);
                     }
                 }
             }
+            return theList;
         }
-
     }
 }

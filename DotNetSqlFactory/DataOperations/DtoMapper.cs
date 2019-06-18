@@ -11,12 +11,10 @@ namespace DotNetSqlFactory.DataOperations
 {
     public class DTOMapper <T>
     {
-        private T _value;
         private MapperConfiguration _mapperConfig;
         private IMapper _mapper;
-        public DTOMapper(T value)
+        public DTOMapper()
         {
-            _value = value;
             CreateMapping();
         }
         /// <summary>
@@ -26,7 +24,7 @@ namespace DotNetSqlFactory.DataOperations
         {
             _mapperConfig = new MapperConfiguration(cfg =>
             {
-                cfg.AddDataReaderMapping(true);
+                cfg.AddDataReaderMapping(false);
                 cfg.CreateMap<IDataRecord, T>();
             });
             _mapper = _mapperConfig.CreateMapper();
@@ -38,7 +36,7 @@ namespace DotNetSqlFactory.DataOperations
         /// <returns></returns>
         public List<T> IDataReaderToDtoList(IDataReader dataReader)
         {
-            return _mapper.Map<IDataReader, IEnumerable<T>>(dataReader).ToList();
+            return _mapper.Map<IDataReader, IEnumerable<T>>(dataReader).ToList(); ;
         }
     }
 }
