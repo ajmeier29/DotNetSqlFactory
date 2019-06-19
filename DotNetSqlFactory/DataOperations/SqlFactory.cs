@@ -115,29 +115,82 @@ namespace DotNetSqlFactory.DataOperations
             _dbConnection.Open();
         }
         /// <summary>
-        /// Returns a List<typeparamref name="T"/> frome the SELECT Query response.
+        /// This query's main use case is to send a select query that uses a single 'IN' in the WHERE clause. You can use a 
+        /// combination of the SqlHelper class to build the List<SqlParameter>, then call 
+        /// SqlHelper.GenerateSqlCommandTextFromHelper to build out the query.
         /// </summary>
-        /// <param name="sqlQuery"></param>
+        /// <param name="sqlParameters">List of SqlParameters to be added to the DbCommand</param>
+        /// <param name="customBuildQuery">This funtion shall be responsible for creating the DbCommand.CommandText. The @values should match the SqlParameters. Please see SqlHelper.cs for more information.</param>
         /// <returns></returns>
-        public List<T> QueryToList(string sqlQuery)
+        public DataTable SqlSelectQuery(List<SqlParameter> sqlParameters,  Func<string> customBuildQuery)
         {
-            List<T> theList = new List<T>();
             OpenConnection();
+            var dataTable = new DataTable();
 
             using (DbCommand command = _dbFactory.CreateCommand())
             {
                 command.Connection = _dbConnection;
-                command.CommandText = sqlQuery;
+                command.CommandText = customBuildQuery();
+                command.Parameters.AddRange(sqlParameters.ToArray());
                 using (DbDataReader dataReader = command.ExecuteReader(CommandBehavior.CloseConnection))
                 {
-                    while (dataReader.Read())
-                    {
-                        DTOMapper<T> dtoMapper = new DTOMapper<T>();
-                        theList = dtoMapper.IDataReaderToDtoList(dataReader);
-                    }
+                    dataTable.Load(dataReader);
                 }
             }
-            return theList;
+            return dataTable;
         }
+
+        /// <summary>
+        /// Returns a List<typeparamref name="T"/> frome the SELECT Query response.
+        /// </summary>
+        /// <param name="sqlQuery"></param>
+        /// <returns></returns>
+        //public DataTable QueryToList(string sqlQuery, List<SqlParameter> paramList)
+        //{
+        //    OpenConnection();
+        //    var dataTable = new DataTable();
+
+        //    using (DbCommand command = _dbFactory.CreateCommand())
+        //    {
+        //        command.Connection = _dbConnection;
+        //        command.CommandText = sqlQuery;
+        //        command.Parameters.AddRange(paramList.ToArray());
+        //        using (DbDataReader dataReader = command.ExecuteReader(CommandBehavior.CloseConnection))
+        //        {
+        //            while (dataReader.Read())
+        //            {
+        //                dataTable.Load(dataReader);
+        //                //DTOMapper<T> dtoMapper = new DTOMapper<T>();
+        //                //theList = dtoMapper.IDataReaderToDtoList(dataReader);
+        //            }
+        //        }
+        //    }
+        //    return dataTable;
+        //}
+        /// <summary>
+        /// Returns a List<typeparamref name="T"/> frome the SELECT Query response.
+        /// </summary>
+        /// <param name="sqlQuery"></param>
+        /// <returns></returns>
+        //public List<T> QueryToList(string sqlQuery)
+        //{
+        //    List<T> theList = new List<T>();
+        //    OpenConnection();
+
+        //    using (DbCommand command = _dbFactory.CreateCommand())
+        //    {
+        //        command.Connection = _dbConnection;
+        //        command.CommandText = sqlQuery;
+        //        using (DbDataReader dataReader = command.ExecuteReader(CommandBehavior.CloseConnection))
+        //        {
+        //            while (dataReader.Read())
+        //            {
+        //                DTOMapper<T> dtoMapper = new DTOMapper<T>();
+        //                theList = dtoMapper.IDataReaderToDtoList(dataReader);
+        //            }
+        //        }
+        //    }
+        //    return theList;
+        //}
     }
 }

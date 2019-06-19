@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DotNetSqlFactory.DataOperations;
 using System.Data;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 
 namespace DotNetSqlFactory.Tests
 {
@@ -11,17 +12,50 @@ namespace DotNetSqlFactory.Tests
     public class SqlFactory_Tests
     {
         [TestMethod]
-        public void SelectQuerySqlServer_Test()
+        public void SelectQueryToDataTable_Test()
         {
             var connectionstring = ConfigurationManager.AppSettings["connectionString"];
+            List<int> idList = new List<int>
+            {
+                1,4,6,8
+            };
+            // build sql parameters
+            SqlHelper<int> sqlHelper = new SqlHelper<int>(idList, SqlDbType.Int, "@Value");
+            List<SqlParameter> sqlParameters = sqlHelper.ParameterInListHelper();
             SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.SqlServer, connectionstring);
-            List<Inventory> inventoryList = sqlFactory.QueryToList(@"SELECT [CarId]
-                                      ,[Make]
-                                      ,[Color]
-                                      ,[PetName]
-                                  FROM [BookLearning].[dbo].[Inventory]");
-            Assert.IsTrue(inventoryList.Count == 7);
+            var inventoryList = sqlFactory.SqlSelectQuery(sqlParameters, () =>
+            {
+                string replaceValue = "<<Value>>";
+                string sqlQuery = @"SELECT [CarId]
+                                    ,[Make]
+                                    ,[Color]
+                                    ,[PetName]
+                                FROM [BookLearning].[dbo].[Inventory]" + 
+                                $"WHERE CarId IN ({replaceValue})";
+                return sqlHelper.GenerateSqlCommandTextFromHelper(replaceValue, sqlQuery);
+            });
+            string allCarIds = "";
+            foreach (DataRow row in inventoryList.Rows)
+            {
+                allCarIds +=  row["CarId"];
+            }
+            Assert.IsTrue(inventoryList.Rows.Count == 4);
+            Assert.IsTrue(allCarIds.Equals(string.Join("", idList.ToArray())));
         }
+
+        //[TestMethod]
+        //public void SelectQuerySqlServer_Test()
+        //{
+        //    var connectionstring = ConfigurationManager.AppSettings["connectionString"];
+        //    SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.SqlServer, connectionstring);
+        //    List<Inventory> inventoryList = sqlFactory.QueryToList(@"SELECT [CarId]
+        //                              ,[Make]
+        //                              ,[Color]
+        //                              ,[PetName]
+        //                          FROM [BookLearning].[dbo].[Inventory]");
+        //    Assert.IsTrue(inventoryList.Count == 7);
+        //}
+
         //[TestMethod]
         //public void SqlClientDbFactory_Test()
         //{

@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="DataOperations\DtoMapper.cs" />
     <Compile Include="DataOperations\SqlFactory.cs" />
+    <Compile Include="DataOperations\SqlHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
