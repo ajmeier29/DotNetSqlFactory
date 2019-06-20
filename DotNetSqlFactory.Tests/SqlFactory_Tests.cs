@@ -12,7 +12,7 @@ namespace DotNetSqlFactory.Tests
     public class SqlFactory_Tests
     {
         [TestMethod]
-        public void SelectQueryToDataTable_Test()
+        public void SelectQueryIncludesToDataTable_Test()
         {
             var connectionstring = ConfigurationManager.AppSettings["connectionString"];
             List<int> idList = new List<int>
@@ -23,7 +23,7 @@ namespace DotNetSqlFactory.Tests
             SqlHelper<int> sqlHelper = new SqlHelper<int>(idList, SqlDbType.Int, "@Value");
             List<SqlParameter> sqlParameters = sqlHelper.ParameterInListHelper();
             SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.SqlServer, connectionstring);
-            var inventoryList = sqlFactory.SqlSelectQuery(sqlParameters, () =>
+            var inventoryDataTable = sqlFactory.SqlSelectQuery(sqlParameters, () =>
             {
                 string replaceValue = "<<Value>>";
                 string sqlQuery = @"SELECT [CarId]
@@ -35,53 +35,66 @@ namespace DotNetSqlFactory.Tests
                 return sqlHelper.GenerateSqlCommandTextFromHelper(replaceValue, sqlQuery);
             });
             string allCarIds = "";
-            foreach (DataRow row in inventoryList.Rows)
+            foreach (DataRow row in inventoryDataTable.Rows)
             {
                 allCarIds +=  row["CarId"];
             }
-            Assert.IsTrue(inventoryList.Rows.Count == 4);
+            Assert.IsTrue(inventoryDataTable.Rows.Count == 4);
             Assert.IsTrue(allCarIds.Equals(string.Join("", idList.ToArray())));
         }
 
-        //[TestMethod]
-        //public void SelectQuerySqlServer_Test()
-        //{
-        //    var connectionstring = ConfigurationManager.AppSettings["connectionString"];
-        //    SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.SqlServer, connectionstring);
-        //    List<Inventory> inventoryList = sqlFactory.QueryToList(@"SELECT [CarId]
-        //                              ,[Make]
-        //                              ,[Color]
-        //                              ,[PetName]
-        //                          FROM [BookLearning].[dbo].[Inventory]");
-        //    Assert.IsTrue(inventoryList.Count == 7);
-        //}
+        [TestMethod]
+        public void SelectQueryParamListToDataTable_Test()
+        {
+            var connectionstring = ConfigurationManager.AppSettings["connectionString"];
+            List<SqlParameter> sqlParameters = new List<SqlParameter>()
+            { 
+                new SqlParameter("@custid", 3),
+                new SqlParameter("@carid", 4)
+            };
 
-        //[TestMethod]
-        //public void SqlClientDbFactory_Test()
-        //{
-        //    SqlFactory sqlFactory = new SqlFactory(SqlFactory.DataProvider.SqlServer);
-        //    Assert.IsTrue(sqlFactory.DatabaseFactory.GetType().Name.Equals("SqlClientFactory"));
-        //}
-        //[TestMethod]
-        //public void OracleDbFactory_Test()
-        //{
-        //    SqlFactory sqlFactory = new SqlFactory(SqlFactory.DataProvider.Oracle);
-        //    Assert.IsTrue(sqlFactory.DatabaseFactory.GetType().Name.Equals("OracleClientFactory"));
-        //}
+            SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.SqlServer, connectionstring);
+            string sqlQuery = @"SELECT orders.OrderId, 
+                                       orders.CustId, 
+                                       inv.CarId, 
+                                       inv.Color, 
+                                       inv.Make, 
+                                       inv.PetName
+                                FROM BookLearning.dbo.Orders AS orders
+                                     LEFT JOIN Inventory AS inv ON inv.CarId = orders.CarId
+                                WHERE orders.CustId = @custid
+                                      AND inv.CarId = @carid;";
+            var customerOrdersDataTable = sqlFactory.SqlSelectQuery(sqlQuery, sqlParameters);
+            Assert.IsTrue((int)customerOrdersDataTable.Rows[0]["CarId"] == 4);
+            Assert.IsTrue(customerOrdersDataTable.Rows[0]["Make"].ToString().Trim().Equals("Yugo"));
+        }
 
-        //[TestMethod]
-        //public void OledbDbFactory_Test()
-        //{
-        //    SqlFactory sqlFactory = new SqlFactory(SqlFactory.DataProvider.OleDb);
-        //    Assert.IsTrue(sqlFactory.DatabaseFactory.GetType().Name.Equals("OleDbFactory"));
-        //}
+        [TestMethod]
+        public void SqlClientDbFactory_Test()
+        {
+            SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.SqlServer);
+            Assert.IsTrue(sqlFactory.DatabaseFactory.GetType().Name.Equals("SqlClientFactory"));
+        }
+        [TestMethod]
+        public void OracleDbFactory_Test()
+        {
+            SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.Oracle);
+            Assert.IsTrue(sqlFactory.DatabaseFactory.GetType().Name.Equals("OracleClientFactory"));
+        }
 
-        //[TestMethod]
-        //public void OdbcDbFactory_Test()
-        //{
-        //    SqlFactory sqlFactory = new SqlFactory(SqlFactory.DataProvider.Odbc);
-        //    Assert.IsTrue(sqlFactory.DatabaseFactory.GetType().Name.Equals("OdbcFactory"));
-        //}
+        [TestMethod]
+        public void OledbDbFactory_Test()
+        {
+            SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.OleDb);
+            Assert.IsTrue(sqlFactory.DatabaseFactory.GetType().Name.Equals("OleDbFactory"));
+        }
+
+        [TestMethod]
+        public void OdbcDbFactory_Test()
+        {
+            SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.Odbc);
+            Assert.IsTrue(sqlFactory.DatabaseFactory.GetType().Name.Equals("OdbcFactory"));
+        }
     }
 
     public class Inventory

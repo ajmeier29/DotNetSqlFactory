@@ -139,58 +139,52 @@ namespace DotNetSqlFactory.DataOperations
             }
             return dataTable;
         }
-
         /// <summary>
-        /// Returns a List<typeparamref name="T"/> frome the SELECT Query response.
+        /// This method makes a simple select query using the list of SqlParameters passed in. 
+        /// </summary>
+        /// <param name="sqlQuery">The SQL Query itself. Use @varibleName for each SqlParameter.</param>
+        /// <param name="paramList">The list of SqlParameters to be injected into the sqlQuery.</param>
+        /// <returns></returns>
+        public DataTable SqlSelectQuery(string sqlQuery, List<SqlParameter> paramList)
+        {
+            OpenConnection();
+            var dataTable = new DataTable();
+
+            using (DbCommand command = _dbFactory.CreateCommand())
+            {
+                command.Connection = _dbConnection;
+                command.CommandText = sqlQuery;
+                command.Parameters.AddRange(paramList.ToArray());
+                using (DbDataReader dataReader = command.ExecuteReader(CommandBehavior.CloseConnection))
+                {
+                    dataTable.Load(dataReader);
+                }
+            }
+            return dataTable;
+        }
+        /// <summary>
+        /// TODO
         /// </summary>
         /// <param name="sqlQuery"></param>
+        /// <param name="paramList"></param>
         /// <returns></returns>
-        //public DataTable QueryToList(string sqlQuery, List<SqlParameter> paramList)
-        //{
-        //    OpenConnection();
-        //    var dataTable = new DataTable();
+        public DataTable CallStoredProc(string sqlQuery, List<SqlParameter> paramList)
+        {
+            // All this code is bullshit. Needs implementation
+            //OpenConnection();
+            //var dataTable = new DataTable();
 
-        //    using (DbCommand command = _dbFactory.CreateCommand())
-        //    {
-        //        command.Connection = _dbConnection;
-        //        command.CommandText = sqlQuery;
-        //        command.Parameters.AddRange(paramList.ToArray());
-        //        using (DbDataReader dataReader = command.ExecuteReader(CommandBehavior.CloseConnection))
-        //        {
-        //            while (dataReader.Read())
-        //            {
-        //                dataTable.Load(dataReader);
-        //                //DTOMapper<T> dtoMapper = new DTOMapper<T>();
-        //                //theList = dtoMapper.IDataReaderToDtoList(dataReader);
-        //            }
-        //        }
-        //    }
-        //    return dataTable;
-        //}
-        /// <summary>
-        /// Returns a List<typeparamref name="T"/> frome the SELECT Query response.
-        /// </summary>
-        /// <param name="sqlQuery"></param>
-        /// <returns></returns>
-        //public List<T> QueryToList(string sqlQuery)
-        //{
-        //    List<T> theList = new List<T>();
-        //    OpenConnection();
-
-        //    using (DbCommand command = _dbFactory.CreateCommand())
-        //    {
-        //        command.Connection = _dbConnection;
-        //        command.CommandText = sqlQuery;
-        //        using (DbDataReader dataReader = command.ExecuteReader(CommandBehavior.CloseConnection))
-        //        {
-        //            while (dataReader.Read())
-        //            {
-        //                DTOMapper<T> dtoMapper = new DTOMapper<T>();
-        //                theList = dtoMapper.IDataReaderToDtoList(dataReader);
-        //            }
-        //        }
-        //    }
-        //    return theList;
-        //}
+            //using (DbCommand command = _dbFactory.CreateCommand())
+            //{
+            //    command.Connection = _dbConnection;
+            //    command.CommandText = sqlQuery;
+            //    command.Parameters.AddRange(paramList.ToArray());
+            //    using (DbDataReader dataReader = command.ExecuteReader(CommandBehavior.CloseConnection))
+            //    {
+            //        dataTable.Load(dataReader);
+            //    }
+            //}
+            throw new NotImplementedException("This method needs to be implemented.");
+        }
     }
 }
