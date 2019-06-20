@@ -9,6 +9,11 @@ using System.Threading.Tasks;
 
 namespace DotNetSqlFactory.DataOperations
 {
+    /// <summary>
+    /// This class Maps a DataTable to a class using AutoMapper.
+    /// TODO: Remove IDataReader dependancy and use Datatable for the mapping to remove uneccessary DataTable.CreateDataReader() converstion. 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class DTOMapper <T>
     {
         private MapperConfiguration _mapperConfig;
@@ -30,13 +35,13 @@ namespace DotNetSqlFactory.DataOperations
             _mapper = _mapperConfig.CreateMapper();
         }
         /// <summary>
-        /// Returns a List<typeparamref name="T"/> from the IDataReader passed into this method. 
+        /// Returns a List<typeparamref name="T"/> from the DataTable passed into this method. 
         /// </summary>
-        /// <param name="dataReader"></param>
+        /// <param name="dataTable"></param>
         /// <returns></returns>
-        public List<T> IDataReaderToDtoList(IDataReader dataReader)
+        public List<T> DataTableToDtoList(DataTable dataTable)
         {
-            return _mapper.Map<IDataReader, IEnumerable<T>>(dataReader).ToList(); ;
+            return _mapper.Map<IDataReader, IEnumerable<T>>(dataTable.CreateDataReader()).ToList(); ;
         }
     }
 }

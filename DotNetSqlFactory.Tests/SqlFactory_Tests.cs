@@ -5,6 +5,7 @@ using DotNetSqlFactory.DataOperations;
 using System.Data;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace DotNetSqlFactory.Tests
 {
@@ -67,6 +68,37 @@ namespace DotNetSqlFactory.Tests
             var customerOrdersDataTable = sqlFactory.SqlSelectQuery(sqlQuery, sqlParameters);
             Assert.IsTrue((int)customerOrdersDataTable.Rows[0]["CarId"] == 4);
             Assert.IsTrue(customerOrdersDataTable.Rows[0]["Make"].ToString().Trim().Equals("Yugo"));
+        }
+
+        [TestMethod]
+        public void SelectQueryListToDTO_Test()
+        {
+            var connectionstring = ConfigurationManager.AppSettings["connectionString"];
+            List<int> idList = new List<int>
+            {
+                1,4,6,8
+            };
+            // build sql parameters
+            SqlHelper<int> sqlHelper = new SqlHelper<int>(idList, SqlDbType.Int, "@Value");
+            List<SqlParameter> sqlParameters = sqlHelper.ParameterInListHelper();
+            SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.SqlServer, connectionstring);
+            var inventoryDataTable = sqlFactory.SqlSelectQuery(sqlParameters, () =>
+            {
+                string replaceValue = "<<Value>>";
+                string sqlQuery = @"SELECT [CarId]
+                                    ,[Make]
+                                    ,[Color]
+                                    ,[PetName]
+                                FROM [BookLearning].[dbo].[Inventory]" +
+                                $"WHERE CarId IN ({replaceValue})";
+                return sqlHelper.GenerateSqlCommandTextFromHelper(replaceValue, sqlQuery);
+            });
+
+            // Convert DataTable to class
+            DTOMapper<Inventory> dtoMapper = new DTOMapper<Inventory>();
+            var inventory = dtoMapper.DataTableToDtoList(inventoryDataTable);
+            Assert.IsTrue(inventory.ElementAt(0).CarId.ToString().Equals("1"));
+            Assert.IsTrue(inventory.ElementAt(1).Color.ToString().Trim().Equals("Yellow"));
         }
 
         [TestMethod]
