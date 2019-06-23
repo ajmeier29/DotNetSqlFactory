@@ -14,9 +14,8 @@ using System.Data.Odbc;
 
 namespace DotNetSqlFactory.DataOperations
 {
-    public class SqlFactory<T> where T : class, new()
+    public class SqlFactory
     {
-        private T _value;
         DbConnection _dbConnection;
         public DbConnection DatabaseConnection
         {
@@ -115,6 +114,16 @@ namespace DotNetSqlFactory.DataOperations
             _dbConnection.Open();
         }
         /// <summary>
+        /// Closes the current DbConnection
+        /// </summary>
+        public void CloseConnection()
+        {
+            if(_dbConnection != null)
+            {
+                _dbConnection.Close();
+            }
+        }
+        /// <summary>
         /// This query's main use case is to send a select query that uses a single 'IN' in the WHERE clause. You can use a 
         /// combination of the SqlHelper class to build the List<SqlParameter>, then call 
         /// SqlHelper.GenerateSqlCommandTextFromHelper to build out the query.
@@ -165,26 +174,25 @@ namespace DotNetSqlFactory.DataOperations
         /// <summary>
         /// TODO
         /// </summary>
-        /// <param name="sqlQuery"></param>
+        /// <param name="storedProcName"></param>
         /// <param name="paramList"></param>
         /// <returns></returns>
-        public DataTable CallStoredProc(string sqlQuery, List<SqlParameter> paramList)
+        public void StoredProcInsert(string storedProcName, List<SqlParameter> paramList)
         {
-            // All this code is bullshit. Needs implementation
-            //OpenConnection();
-            //var dataTable = new DataTable();
+            OpenConnection();
 
-            //using (DbCommand command = _dbFactory.CreateCommand())
-            //{
-            //    command.Connection = _dbConnection;
-            //    command.CommandText = sqlQuery;
-            //    command.Parameters.AddRange(paramList.ToArray());
-            //    using (DbDataReader dataReader = command.ExecuteReader(CommandBehavior.CloseConnection))
-            //    {
-            //        dataTable.Load(dataReader);
-            //    }
-            //}
-            throw new NotImplementedException("This method needs to be implemented.");
+            using (DbCommand command = _dbFactory.CreateCommand())
+            {
+                // create the command and its properties
+                command.Connection = _dbConnection;
+                command.CommandText = storedProcName;
+                command.CommandType = CommandType.StoredProcedure;
+
+                // add the input parameters
+                command.Parameters.AddRange(paramList.ToArray());
+                command.ExecuteNonQuery();
+            }
+            CloseConnection();
         }
     }
 }

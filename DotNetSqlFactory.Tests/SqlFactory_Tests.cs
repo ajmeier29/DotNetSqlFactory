@@ -23,7 +23,7 @@ namespace DotNetSqlFactory.Tests
             // build sql parameters
             SqlHelper<int> sqlHelper = new SqlHelper<int>(idList, SqlDbType.Int, "@Value");
             List<SqlParameter> sqlParameters = sqlHelper.ParameterInListHelper();
-            SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.SqlServer, connectionstring);
+            SqlFactory sqlFactory = new SqlFactory(SqlFactory.DataProvider.SqlServer, connectionstring);
             var inventoryDataTable = sqlFactory.SqlSelectQuery(sqlParameters, () =>
             {
                 string replaceValue = "<<Value>>";
@@ -54,7 +54,7 @@ namespace DotNetSqlFactory.Tests
                 new SqlParameter("@carid", 4)
             };
 
-            SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.SqlServer, connectionstring);
+            SqlFactory sqlFactory = new SqlFactory(SqlFactory.DataProvider.SqlServer, connectionstring);
             string sqlQuery = @"SELECT orders.OrderId, 
                                        orders.CustId, 
                                        inv.CarId, 
@@ -81,7 +81,7 @@ namespace DotNetSqlFactory.Tests
             // build sql parameters
             SqlHelper<int> sqlHelper = new SqlHelper<int>(idList, SqlDbType.Int, "@Value");
             List<SqlParameter> sqlParameters = sqlHelper.ParameterInListHelper();
-            SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.SqlServer, connectionstring);
+            SqlFactory sqlFactory = new SqlFactory(SqlFactory.DataProvider.SqlServer, connectionstring);
             var inventoryDataTable = sqlFactory.SqlSelectQuery(sqlParameters, () =>
             {
                 string replaceValue = "<<Value>>";
@@ -104,27 +104,27 @@ namespace DotNetSqlFactory.Tests
         [TestMethod]
         public void SqlClientDbFactory_Test()
         {
-            SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.SqlServer);
+            SqlFactory sqlFactory = new SqlFactory(SqlFactory.DataProvider.SqlServer);
             Assert.IsTrue(sqlFactory.DatabaseFactory.GetType().Name.Equals("SqlClientFactory"));
         }
         [TestMethod]
         public void OracleDbFactory_Test()
         {
-            SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.Oracle);
+            SqlFactory sqlFactory = new SqlFactory(SqlFactory.DataProvider.Oracle);
             Assert.IsTrue(sqlFactory.DatabaseFactory.GetType().Name.Equals("OracleClientFactory"));
         }
 
         [TestMethod]
         public void OledbDbFactory_Test()
         {
-            SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.OleDb);
+            SqlFactory sqlFactory = new SqlFactory(SqlFactory.DataProvider.OleDb);
             Assert.IsTrue(sqlFactory.DatabaseFactory.GetType().Name.Equals("OleDbFactory"));
         }
 
         [TestMethod]
         public void OdbcDbFactory_Test()
         {
-            SqlFactory<Inventory> sqlFactory = new SqlFactory<Inventory>(SqlFactory<Inventory>.DataProvider.Odbc);
+            SqlFactory sqlFactory = new SqlFactory(SqlFactory.DataProvider.Odbc);
             Assert.IsTrue(sqlFactory.DatabaseFactory.GetType().Name.Equals("OdbcFactory"));
         }
     }
