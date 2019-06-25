@@ -177,7 +177,7 @@ namespace DotNetSqlFactory.DataOperations
         /// <param name="storedProcName"></param>
         /// <param name="paramList"></param>
         /// <returns></returns>
-        public void StoredProcInsert(string storedProcName, List<SqlParameter> paramList)
+        public void CallStoredProcedure(string storedProcName, List<SqlParameter> paramList)
         {
             OpenConnection();
 
@@ -195,7 +195,7 @@ namespace DotNetSqlFactory.DataOperations
             CloseConnection();
         }
 
-        public void StoredProcInsert(string storedProcName, SqlParameter sqlParameter)
+        public void CallStoredProcedure(string storedProcName, SqlParameter sqlParameter)
         {
             OpenConnection();
 
@@ -213,7 +213,7 @@ namespace DotNetSqlFactory.DataOperations
             CloseConnection();
         }
 
-        public int? StoredProcInsert(string storedProcName, List<SqlParameter> paramList, SqlParameter outputParam)
+        public int? CallStoredProcedure(string storedProcName, List<SqlParameter> paramList, SqlParameter outputParam)
         {
             OpenConnection();
 
