@@ -194,5 +194,48 @@ namespace DotNetSqlFactory.DataOperations
             }
             CloseConnection();
         }
+
+        public void StoredProcInsert(string storedProcName, SqlParameter sqlParameter)
+        {
+            OpenConnection();
+
+            using (DbCommand command = _dbFactory.CreateCommand())
+            {
+                // create the command and its properties
+                command.Connection = _dbConnection;
+                command.CommandText = storedProcName;
+                command.CommandType = CommandType.StoredProcedure;
+
+                // add the input parameters
+                command.Parameters.Add(sqlParameter);
+                command.ExecuteNonQuery();
+            }
+            CloseConnection();
+        }
+
+        public int? StoredProcInsert(string storedProcName, List<SqlParameter> paramList, SqlParameter outputParam)
+        {
+            OpenConnection();
+
+            int? returnVal = null;
+
+            using (DbCommand command = _dbFactory.CreateCommand())
+            {
+                // create the command and its properties
+                command.Connection = _dbConnection;
+                command.CommandText = storedProcName;
+                command.CommandType = CommandType.StoredProcedure;
+
+                // add the input parameters
+                command.Parameters.AddRange(paramList.ToArray());
+                // add output parameter
+                 command.Parameters.Add(outputParam);
+                command.ExecuteNonQuery();
+                // retrive output parameter
+                returnVal = outputParam.Value as int?;
+            }
+            CloseConnection();
+            return returnVal;
+        }
     }
 }
