@@ -152,7 +152,7 @@ namespace DotNetSqlFactory.DataOperations
         /// This method makes a simple select query using the list of SqlParameters passed in. 
         /// </summary>
         /// <param name="sqlQuery">The SQL Query itself. Use @varibleName for each SqlParameter.</param>
-        /// <param name="paramList">The list of SqlParameters to be injected into the sqlQuery.</param>
+        /// <param name="paramList">The list of SqlParameters to be added to the DbCommand Parameters.</param>
         /// <returns></returns>
         public DataTable SqlSelectQuery(string sqlQuery, List<SqlParameter> paramList)
         {
@@ -164,6 +164,29 @@ namespace DotNetSqlFactory.DataOperations
                 command.Connection = _dbConnection;
                 command.CommandText = sqlQuery;
                 command.Parameters.AddRange(paramList.ToArray());
+                using (DbDataReader dataReader = command.ExecuteReader(CommandBehavior.CloseConnection))
+                {
+                    dataTable.Load(dataReader);
+                }
+            }
+            return dataTable;
+        }
+        /// <summary>
+        /// This method makes a simple select query using the list of SqlParameter passed in. 
+        /// </summary>
+        /// <param name="sqlQuery">The SQL Query itself. Use @varibleName for the SqlParameter.</param>
+        /// <param name="parameter">The SqlParameter to be added to the DbCommand Parameters.</param>
+        /// <returns></returns>
+        public DataTable SqlSelectQuery(string sqlQuery, SqlParameter parameter)
+        {
+            OpenConnection();
+            var dataTable = new DataTable();
+
+            using (DbCommand command = _dbFactory.CreateCommand())
+            {
+                command.Connection = _dbConnection;
+                command.CommandText = sqlQuery;
+                command.Parameters.Add(parameter);
                 using (DbDataReader dataReader = command.ExecuteReader(CommandBehavior.CloseConnection))
                 {
                     dataTable.Load(dataReader);
